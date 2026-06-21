@@ -1,2 +1,2 @@
 # notes
-lecture notes
+QEC lecture notes
