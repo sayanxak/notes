@@ -1,2 +1,2 @@
-# notes
+# Download page
 QEC lecture notes
