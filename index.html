@@ -1,69 +1,465 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>QEC Lecture Notes</title>
-    <style>
-      :root {
-        color: #f4f7fb;
-        background: #000000;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quantum Error Correction — Lecture Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;1,8..60,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F3F4EF;
+    --paper-2: #EDEFE8;
+    --grid-line: #C7D2DE;
+    --ink: #1A2130;
+    --ink-soft: #4B5163;
+    --muted: #7A8090;
+    --red: #B23A2E;
+    --red-soft: #D8CFC7;
+    --teal: #2F6E62;
+    --rule: #D8DCD2;
+    --max: 700px;
+  }
 
-      body {
-        margin: 0;
-      }
+  *{ box-sizing: border-box; }
 
-      main {
-        max-width: 900px;
-        padding: 64px 32px;
-      }
+  html{ scroll-behavior: smooth; }
 
-      h1 {
-        margin: 0 0 40px;
-        padding-bottom: 24px;
-        border-bottom: 1px solid #2a2f3a;
-        font-size: clamp(2.25rem, 6vw, 3.75rem);
-        line-height: 1.1;
-      }
+  body{
+    margin: 0;
+    background:
+      linear-gradient(var(--grid-line) 1px, transparent 1px) 0 0/100% 32px,
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/32px 100%,
+      var(--paper);
+    background-attachment: fixed;
+    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+  }
 
-      a {
-        color: #58a6ff;
-        text-decoration: none;
-      }
+  body::before{
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(243,244,239,0.55) 0%, rgba(243,244,239,0.92) 55%, var(--paper) 85%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
-      a:hover {
-        text-decoration: underline;
-      }
+  .wrap{
+    position: relative;
+    z-index: 1;
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
 
-      .notes-link {
-        display: inline-block;
-        margin-bottom: 18px;
-        padding-bottom: 18px;
-        border-bottom: 1px solid #2a2f3a;
-        font-size: clamp(1.75rem, 4vw, 2.75rem);
-        font-weight: 700;
-      }
+  /* ---------- nav ---------- */
+  nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 0 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  nav .mark{ color: var(--ink); font-weight: 500; }
+  nav .mark::before{
+    content: "▢▢";
+    color: var(--red);
+    margin-right: 8px;
+    letter-spacing: 2px;
+  }
 
-      .description {
-        max-width: 860px;
-        margin: 0;
-        color: #8ee3d2;
-        font-size: clamp(1.15rem, 2.6vw, 1.65rem);
-        line-height: 1.6;
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>Download page</h1>
-      <a class="notes-link" href="Qec_12.pdf">QEC Lecture notes</a>
-      <p class="description">
-        These lecture notes are intended for readers with a basic background in linear algebra.
-        No prior knowledge of physics or computer science is assumed. The notes may contain
-        typographical errors; please feel free to let me know if you find any.
-      </p>
-    </main>
-  </body>
+  /* ---------- hero ---------- */
+  header.hero{
+    padding: 72px 0 8px;
+    text-align: left;
+  }
+
+  .eyebrow{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal);
+    margin: 0 0 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before{
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: var(--teal);
+    display: inline-block;
+  }
+
+  h1{
+    font-family: 'Fraunces', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.6rem, 6vw, 4.3rem);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    margin: 0 0 28px;
+    color: var(--ink);
+  }
+  h1 em{
+    font-style: italic;
+    font-weight: 500;
+    color: var(--red);
+  }
+
+  .subtitle{
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    max-width: 54ch;
+    margin: 0 0 8px;
+  }
+  .subtitle .accent{ color: var(--ink); font-weight: 500; }
+
+  /* ---------- lattice diagram ---------- */
+  .lattice-panel{
+    margin: 52px 0 44px;
+    border: 1px solid var(--rule);
+    background: rgba(255,255,255,0.35);
+    border-radius: 2px;
+    padding: 8px 8px 4px;
+  }
+  .lattice-caption{
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 10px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .lattice-caption .state{
+    color: var(--ink-soft);
+    min-width: 150px;
+    text-align: right;
+    transition: color 0.3s ease;
+  }
+  .lattice-caption .state.err{ color: var(--red); }
+  .lattice-caption .state.ok{ color: var(--teal); }
+
+  svg#lattice{ display: block; width: 100%; height: auto; touch-action: manipulation; }
+  .qubit{ cursor: pointer; }
+  .qubit circle.fill{ transition: fill 0.35s ease, r 0.35s ease; }
+  .qubit circle.ring{ transition: stroke 0.35s ease, stroke-width 0.35s ease, opacity 0.35s ease; }
+  .stab-edge{ transition: stroke 0.35s ease, stroke-width 0.35s ease, opacity 0.35s ease; }
+  .stab-mark{ transition: opacity 0.35s ease; opacity: 0; }
+
+  /* ---------- body copy ---------- */
+  .prose p{
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 20px;
+  }
+  .prose strong{ color: var(--ink); font-weight: 500; }
+
+  /* ---------- download ---------- */
+  .download-block{
+    margin: 48px 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .btn-download{
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--paper);
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 15px 24px;
+    text-decoration: none;
+    border-radius: 2px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+  .btn-download:hover{
+    background: var(--red);
+    border-color: var(--red);
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+  .btn-download:active{ transform: translate(0,0); box-shadow: none; }
+  .btn-download svg{ width: 15px; height: 15px; flex-shrink: 0; }
+
+  .file-meta{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ---------- prerequisites strip ---------- */
+  .req-strip{
+    display: flex;
+    gap: 28px;
+    padding: 20px 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    margin: 44px 0;
+    flex-wrap: wrap;
+  }
+  .req-item{
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .req-item .yes{ color: var(--teal); }
+  .req-item .no{ color: var(--red); text-decoration: line-through; text-decoration-color: rgba(178,58,46,0.5); }
+  .req-item .label{ color: var(--ink-soft); text-decoration: none; }
+
+  /* ---------- footer ---------- */
+  footer{
+    margin-top: 60px;
+    padding-top: 28px;
+    border-top: 1px solid var(--rule);
+  }
+  footer p{
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--muted);
+    max-width: 52ch;
+    margin: 0;
+  }
+  footer .sig{
+    margin-top: 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  @media (max-width: 520px){
+    .wrap{ padding: 0 18px 60px; }
+    header.hero{ padding-top: 52px; }
+    .req-strip{ gap: 18px; }
+    .download-block{ flex-direction: column; align-items: flex-start; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition-duration: 0.001ms !important; animation-duration: 0.001ms !important; }
+  }
+
+  :focus-visible{
+    outline: 2px solid var(--red);
+    outline-offset: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <span class="mark">QEC NOTES</span>
+    <span>v12 · 2026</span>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">Lecture notes · self-contained</p>
+    <h1>Quantum error<br><em>correction</em>, from first<br>principles.</h1>
+    <p class="subtitle">A course built to need <span class="accent">nothing but linear algebra</span> — no physics, no computer science, assumed on entry.</p>
+  </header>
+
+  <div class="lattice-panel">
+    <div class="lattice-caption">
+      <span>FIG. 1 — parity-check lattice</span>
+      <span class="state" id="stateLabel">click a qubit</span>
+    </div>
+    <svg id="lattice" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interactive diagram of a parity-check lattice. Click a qubit to see an error get detected and corrected.">
+      <!-- edges drawn by JS -->
+      <g id="edges"></g>
+      <g id="qubits"></g>
+    </svg>
+  </div>
+
+  <section class="prose">
+    <p>These notes build quantum error correction the way it should be built: as a question about redundancy, not a question about physics. <strong>A qubit fails; its neighbors notice; the failure is undone</strong> — the diagram above is that sentence made literal. Click any point in the lattice.</p>
+    <p>The course moves from stabilizer formalism through the surface code to continuous-variable constructions, treating each as a different answer to the same linear-algebraic question: <em>how much structure does it take for errors to become detectable, and detectable errors to become correctable?</em></p>
+  </section>
+
+  <div class="req-strip">
+    <div class="req-item"><span class="yes">✓</span><span class="label">Linear algebra</span></div>
+    <div class="req-item"><span class="no">physics background</span></div>
+    <div class="req-item"><span class="no">CS background</span></div>
+  </div>
+
+  <div class="download-block">
+    <a class="btn-download" href="https://notes.sionc.in/Qec_12.pdf" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Download the notes
+    </a>
+    <span class="file-meta">PDF · Qec_12.pdf</span>
+  </div>
+
+  <footer>
+    <p>The notes may still contain the occasional typo — the kind no stabilizer catches. If you find one, flagging it folds straight into the next revision.</p>
+    <div class="sig">
+      <span>sionc.in</span>
+      <span>[[n, k, d]]</span>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  const NS = "http://www.w3.org/2000/svg";
+  const edgesG = document.getElementById('edges');
+  const qubitsG = document.getElementById('qubits');
+  const stateLabel = document.getElementById('stateLabel');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const cols = 5, rows = 4;
+  const padX = 55, padY = 45;
+  const spanX = 400 - padX*2, spanY = 300 - padY*2;
+
+  const points = [];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      points.push({
+        x: padX + (spanX * c/(cols-1)),
+        y: padY + (spanY * r/(rows-1)),
+        r, c
+      });
+    }
+  }
+  const idx = (r,c) => r*cols + c;
+
+  // build edges (horizontal + vertical neighbors)
+  const edges = [];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(c < cols-1) edges.push([idx(r,c), idx(r,c+1)]);
+      if(r < rows-1) edges.push([idx(r,c), idx(r+1,c)]);
+    }
+  }
+
+  const edgeEls = edges.map(([a,b])=>{
+    const p1 = points[a], p2 = points[b];
+    const line = document.createElementNS(NS,'line');
+    line.setAttribute('x1', p1.x); line.setAttribute('y1', p1.y);
+    line.setAttribute('x2', p2.x); line.setAttribute('y2', p2.y);
+    line.setAttribute('class','stab-edge');
+    line.setAttribute('stroke', '#C7D2DE');
+    line.setAttribute('stroke-width', '1.3');
+    edgesG.appendChild(line);
+    return {el: line, a, b};
+  });
+
+  function neighborsOf(i){
+    return edgeEls.filter(e => e.a===i || e.b===i);
+  }
+
+  const qubitEls = points.map((p,i)=>{
+    const g = document.createElementNS(NS,'g');
+    g.setAttribute('class','qubit');
+    g.setAttribute('tabindex','0');
+    g.setAttribute('role','button');
+    g.setAttribute('aria-label', 'Qubit ' + (i+1) + ', click to simulate an error');
+
+    const ring = document.createElementNS(NS,'circle');
+    ring.setAttribute('class','ring');
+    ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y);
+    ring.setAttribute('r', 10);
+    ring.setAttribute('fill','none');
+    ring.setAttribute('stroke','transparent');
+    ring.setAttribute('stroke-width','1.5');
+    ring.setAttribute('opacity','0');
+
+    const fill = document.createElementNS(NS,'circle');
+    fill.setAttribute('class','fill');
+    fill.setAttribute('cx', p.x); fill.setAttribute('cy', p.y);
+    fill.setAttribute('r', 5);
+    fill.setAttribute('fill', '#1A2130');
+
+    g.appendChild(ring);
+    g.appendChild(fill);
+    qubitsG.appendChild(g);
+
+    const trigger = () => runCycle(i);
+    g.addEventListener('click', trigger);
+    g.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); trigger(); }});
+
+    return {g, ring, fill};
+  });
+
+  let busy = false;
+  function runCycle(i){
+    if(busy) return;
+    busy = true;
+    const q = qubitEls[i];
+    const nbrs = neighborsOf(i);
+
+    // step 1: error occurs
+    q.fill.setAttribute('fill', '#B23A2E');
+    q.fill.setAttribute('r', 6.5);
+    q.ring.setAttribute('stroke', '#B23A2E');
+    q.ring.setAttribute('opacity', '0.35');
+    stateLabel.textContent = 'error on qubit';
+    stateLabel.className = 'state err';
+
+    const t1 = reduced ? 0 : 550;
+    setTimeout(()=>{
+      // step 2: neighboring stabilizers detect it
+      nbrs.forEach(e => {
+        e.el.setAttribute('stroke', '#2F6E62');
+        e.el.setAttribute('stroke-width', '2.4');
+      });
+      stateLabel.textContent = 'syndrome detected';
+      stateLabel.className = 'state';
+      stateLabel.style.color = '#2F6E62';
+
+      const t2 = reduced ? 0 : 700;
+      setTimeout(()=>{
+        // step 3: correction applied
+        q.fill.setAttribute('fill', '#1A2130');
+        q.fill.setAttribute('r', 5);
+        q.ring.setAttribute('stroke', '#2F6E62');
+        q.ring.setAttribute('opacity', '0.5');
+        stateLabel.textContent = 'corrected';
+        stateLabel.className = 'state ok';
+
+        const t3 = reduced ? 0 : 750;
+        setTimeout(()=>{
+          nbrs.forEach(e => {
+            e.el.setAttribute('stroke', '#C7D2DE');
+            e.el.setAttribute('stroke-width', '1.3');
+          });
+          q.ring.setAttribute('opacity', '0');
+          stateLabel.textContent = 'click a qubit';
+          stateLabel.style.color = '';
+          stateLabel.className = 'state';
+          busy = false;
+        }, t3);
+      }, t2);
+    }, t1);
+  }
+})();
+</script>
+
+</body>
 </html>
